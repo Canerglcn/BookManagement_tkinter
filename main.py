@@ -4,6 +4,17 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import sqlite3
 
+import pandas as pd
+
+'''
+cursor.execute("""CREATE TABLE books (
+                box_name char,
+                name varchar(255),
+                author varchar(255)
+
+                )""")
+
+'''
 
 
 
@@ -14,27 +25,11 @@ root.eval('tk::PlaceWindow . center')
 
 
 
-# .resize((100,90))
-img=ImageTk.PhotoImage(Image.open("book.jpg").resize((100,90)))
 
-imgLabel=Label(root,image=img).grid(row=0,column=0,columnspan=2)
-
-
-'''
-cursor.execute("""CREATE TABLE books (
-                box_name char,
-                name varchar(255),
-                author varchar(255)
-                
-                )""")
-
-'''
 
 def update():
     conn = sqlite3.connect("books.db")
     cursor = conn.cursor()
-
-    record_id=select_box.get()
 
     conn.execute("""UPDATE books SET
         box_name = :box,
@@ -54,6 +49,8 @@ def update():
 
     conn.close()
 
+    print("Update ="+record_id)
+
     editor.destroy()
 
 
@@ -61,6 +58,7 @@ def update():
 
 def edit():
 
+    global record_id
 
     record_id = select_box.get()
     if (len(record_id) == 0):
@@ -100,6 +98,7 @@ def edit():
             author_label = Label(editor, width=25, text="Author")
             author_label.grid(row=2, column=0)
 
+
             for record in records:
                 boxName_editor.insert(0, record[0])
                 name_editor.insert(0, record[1])
@@ -109,6 +108,8 @@ def edit():
             edit_btn.grid(row=3, column=0, columnspan=2, padx=10, pady=5, ipadx=150)
 
             select_box.delete(0, END)
+
+            conn.close()
 
 
 
@@ -175,6 +176,16 @@ class Table:
                 self.e.insert(END, records[i][j])
 
 
+def exportexcel():
+    conn = sqlite3.connect("books.db")
+
+    df=pd.read_sql_query("SELECT * FROM books", conn)
+
+    df.to_excel("books.xlsx", index=False)
+
+    conn.close()
+
+
 
 
 def showTable():
@@ -182,20 +193,30 @@ def showTable():
     cursor = conn.cursor()
 
     tableRoot = Tk()
+
+    #start
+    cursor.execute("Select Count(*) From books")
+    total_count=cursor.fetchone()
+
     tableRoot.title("Books Table")
     tableRoot.geometry("600x800")
 
-    heading_label=Label(tableRoot, text="Books Table",font=("Arial", 16, "bold"),padx=10,pady=10,fg="red" )
+
+    heading_label=Label(tableRoot, text="Total Book = "+str(total_count[0]),font=("Arial", 16, "bold"),padx=10,pady=10,fg="red" )
     heading_label.grid(row=0, column=0)
 
+    excel_btn = Button(tableRoot, text="Save as excel",font=("Arial",8,"bold"), background="light blue" , command=exportexcel)
+    excel_btn.grid(row=1, column=0, columnspan=1, padx=10, pady=10, ipadx=30)
+
+
     head1_label=Label(tableRoot,text="BoxName",font=("Arial", 12, "bold"),padx=10,pady=5)
-    head1_label.grid(row=1, column=0)
+    head1_label.grid(row=2, column=0)
     head2_label = Label(tableRoot, text="Name",font=("Arial", 12, "bold"))
-    head2_label.grid(row=1, column=1)
+    head2_label.grid(row=2, column=1)
     head3_label = Label(tableRoot, text="Author",font=("Arial", 12, "bold"))
-    head3_label.grid(row=1, column=2)
+    head3_label.grid(row=2, column=2)
     head3_label = Label(tableRoot, text="ID",font=("Arial", 12, "bold"))
-    head3_label.grid(row=1, column=3)
+    head3_label.grid(row=2, column=3)
 
 
 
@@ -211,6 +232,14 @@ def showTable():
     conn.commit()
 
     conn.close()
+
+
+
+
+# .resize((100,90))
+img=ImageTk.PhotoImage(Image.open("book.jpg").resize((100,90)))
+
+imgLabel=Label(root,image=img).grid(row=0,column=0,columnspan=2)
 
 
 #Create Text Boxes
@@ -240,17 +269,17 @@ delete_box_label.grid(row=8, column=0,pady=5)
 
 
 
-submit_btn = Button(root, text="Add Book", command=submit)
+submit_btn = Button(root, text="Add Book",bg="#50abcc", command=submit)
 submit_btn.grid(row=6, column=0, columnspan=2, padx=10, pady=10, ipadx=150)
 
 
-show_btn=Button(root, text="Show Books", command=showTable)
+show_btn=Button(root, text="Show Books",bg="#4ec76c", command=showTable)
 show_btn.grid(row=7, column=0, columnspan=2, padx=10, pady=5, ipadx=145)
 
-delete_btn=Button(root, text="Delete Book", command=delete)
+delete_btn=Button(root, text="Delete Book",bg="#ba509a", command=delete)
 delete_btn.grid(row=10, column=0, columnspan=2, padx=10, pady=5, ipadx=145)
 
-edit_btn=Button(root, text="Edit Book", command=edit)
+edit_btn=Button(root, text="Edit Book",bg="#edca4c", command=edit)
 edit_btn.grid(row=9, column=0, columnspan=2, padx=10, pady=5, ipadx=150)
 
 
