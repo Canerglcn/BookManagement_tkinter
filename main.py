@@ -49,8 +49,6 @@ def update():
 
     conn.close()
 
-    print("Update ="+record_id)
-
     editor.destroy()
 
 
@@ -192,46 +190,52 @@ def showTable():
     conn = sqlite3.connect("books.db")
     cursor = conn.cursor()
 
-    tableRoot = Tk()
+
 
     #start
     cursor.execute("Select Count(*) From books")
     total_count=cursor.fetchone()
 
-    tableRoot.title("Books Table")
-    tableRoot.geometry("600x800")
+    if (total_count[0]==0):
+        messagebox.showerror("Error", "There is no book in db")
+    else:
+        tableRoot = Tk()
+        tableRoot.title("Books Table")
+        tableRoot.geometry("600x800")
+
+        heading_label = Label(tableRoot, text="Total Book = " + str(total_count[0]), font=("Arial", 16, "bold"),
+                              padx=10, pady=10, fg="red")
+        heading_label.grid(row=0, column=0)
+
+        excel_btn = Button(tableRoot, text="Save as excel", font=("Arial", 8, "bold"), background="light blue",
+                           command=exportexcel)
+        excel_btn.grid(row=1, column=0, columnspan=1, padx=10, pady=10, ipadx=30)
+
+        head1_label = Label(tableRoot, text="BoxName", font=("Arial", 12, "bold"), padx=10, pady=5)
+        head1_label.grid(row=2, column=0)
+        head2_label = Label(tableRoot, text="Name", font=("Arial", 12, "bold"))
+        head2_label.grid(row=2, column=1)
+        head3_label = Label(tableRoot, text="Author", font=("Arial", 12, "bold"))
+        head3_label.grid(row=2, column=2)
+        head3_label = Label(tableRoot, text="ID", font=("Arial", 12, "bold"))
+        head3_label.grid(row=2, column=3)
+
+        cursor.execute("Select *, oid from books order by box_name")
+        global total_rows, total_columns, records
+        records = cursor.fetchall()
+
+        total_rows = len(records)
+        total_columns = len(records[0])
+
+        t = Table(tableRoot)
+
+        conn.commit()
+
+        conn.close()
 
 
-    heading_label=Label(tableRoot, text="Total Book = "+str(total_count[0]),font=("Arial", 16, "bold"),padx=10,pady=10,fg="red" )
-    heading_label.grid(row=0, column=0)
-
-    excel_btn = Button(tableRoot, text="Save as excel",font=("Arial",8,"bold"), background="light blue" , command=exportexcel)
-    excel_btn.grid(row=1, column=0, columnspan=1, padx=10, pady=10, ipadx=30)
 
 
-    head1_label=Label(tableRoot,text="BoxName",font=("Arial", 12, "bold"),padx=10,pady=5)
-    head1_label.grid(row=2, column=0)
-    head2_label = Label(tableRoot, text="Name",font=("Arial", 12, "bold"))
-    head2_label.grid(row=2, column=1)
-    head3_label = Label(tableRoot, text="Author",font=("Arial", 12, "bold"))
-    head3_label.grid(row=2, column=2)
-    head3_label = Label(tableRoot, text="ID",font=("Arial", 12, "bold"))
-    head3_label.grid(row=2, column=3)
-
-
-
-    cursor.execute("Select *, oid from books")
-    global total_rows,total_columns,records
-    records = cursor.fetchall()
-
-    total_rows = len(records)
-    total_columns=len(records[0])
-
-    t=Table(tableRoot)
-
-    conn.commit()
-
-    conn.close()
 
 
 
